@@ -34,7 +34,6 @@ HEADERS_BOOKING = {
 # Szukanie kalendarzy lotów
 
 async def fetch_calendar(origin: str, dest: str, from_date: str):
-    """Pobiera kalendarz cen z Air Scraper (Z opcją debuggowania)."""
     url = "https://sky-scrapper.p.rapidapi.com/api/v1/flights/getPriceCalendar"
     params = {"originSkyId": origin, "destinationSkyId": dest, "fromDate": from_date, "currency": "PLN"}
     
@@ -55,7 +54,6 @@ async def fetch_calendar(origin: str, dest: str, from_date: str):
 # Znajdywanie hoteli
 
 async def fetch_city_name_from_iata(iata_code: str):
-    """Krok A: Tłumaczy kod IATA (np. WAW) na nazwę miasta (np. Warsaw) używając Booking."""
     url = "https://booking-com15.p.rapidapi.com/api/v1/flights/searchDestination"
     params = {"query": iata_code}
     
@@ -74,7 +72,6 @@ async def fetch_city_name_from_iata(iata_code: str):
         return city_name
 
 async def fetch_booking_dest_id(city_name: str):
-    """Krok B: Tłumaczy nazwę miasta (np. Warsaw) na dest_id Bookinga (np. -534433)."""
     url = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchDestination"
     params = {"query": city_name}
     
@@ -93,7 +90,6 @@ async def fetch_booking_dest_id(city_name: str):
         raise HTTPException(status_code=404, detail=f"Booking.com nie znalazł miasta: {city_name}")
 
 async def fetch_hotels(dest_id: str, checkin: str, checkout: str, adults: int):
-    """Krok C: Pobiera hotele na podstawie wyliczonego wcześniej dest_id."""
     url = "https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotels"
     params = {
         "dest_id": dest_id, "search_type": "CITY", 
