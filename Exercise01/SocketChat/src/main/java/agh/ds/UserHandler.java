@@ -15,7 +15,7 @@ public class UserHandler implements Runnable{
     private String nick;
     private final InetAddress address;
     private int udpPort;
-    private List<UserHandler> users;
+    private final List<UserHandler> users;
 
     public UserHandler(Socket socket, List<UserHandler> users) {
         this.socket = socket;
@@ -48,10 +48,9 @@ public class UserHandler implements Runnable{
 
             String message;
             while ((message = in.readLine()) != null) {
-                System.out.print("TCP from " + nick + ": " + message + "\n");
+                System.out.print("[TCP] " + nick + ": " + message + "\n");
                 broadcastTCP("[" + nick + "]: " + message, this);
             }
-
         } catch(IOException e) {
 
         } finally {

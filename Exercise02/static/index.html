@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalkulator Podróżnika</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        width: 110%;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #2c3e50;
+      }
+      .hidden {
+        display: none !important;
+      }
+      label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+      }
+      select,
+      input,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+      button:hover:not(:disabled) {
+        background-color: #2980b9;
+      }
+      button:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+      }
+      .loading {
+        color: #e67e22;
+        font-weight: bold;
+        text-align: center;
+        margin: 15px 0;
+      }
+      .result-box {
+        background: #e8f6f3;
+        padding: 15px;
+        border-left: 5px solid #1abc9c;
+        margin-top: 15px;
+      }
+
+      .calendars-wrapper {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        padding-bottom: 15px;
+      }
+      .month-block {
+        min-width: 300px;
+        flex-shrink: 0;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .month-name {
+        text-align: center;
+        text-transform: capitalize;
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #34495e;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        text-align: center;
+      }
+      .day-header {
+        font-weight: bold;
+        font-size: 0.85em;
+        color: #7f8c8d;
+        padding-bottom: 5px;
+      }
+
+      .calendar-day {
+        padding: 8px 2px;
+        border: 1px solid #ecf0f1;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .calendar-day:hover:not(.disabled):not(.locked) {
+        background-color: #e0f7fa;
+        border-color: #00bcd4;
+      }
+      .calendar-day.selected {
+        background-color: #3498db;
+        color: white;
+        border-color: #2980b9;
+        transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .calendar-day.disabled {
+        background-color: #fafafa;
+        color: #bdc3c7;
+        cursor: not-allowed;
+        border-color: transparent;
+      }
+      .calendar-day.locked {
+        background-color: #ffeaea;
+        color: #e74c3c;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .day-num {
+        display: block;
+        font-size: 1.1em;
+        font-weight: bold;
+        margin-bottom: 2px;
+      }
+      .price-label {
+        display: block;
+        font-size: 0.75em;
+        color: #e74c3c;
+        font-weight: bold;
+      }
+      .calendar-day.selected .price-label {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🌍 Kalkulator Podróżnika</h1>
+
+    <div id="step1" class="card">
+      <h2>Krok 1: Gdzie lecimy?</h2>
+      <form id="form-step1">
+        <label for="origin">Skąd wylatujesz (Kod IATA, np. WAW):</label>
+        <input
+          list="airports"
+          id="origin"
+          name="origin"
+          placeholder="Wpisz kod IATA lub wybierz z listy..."
+          required
+          autocomplete="off"
+        />
+
+        <label for="destination">Dokąd lecisz (Kod IATA, np. CDG):</label>
+        <input
+          list="airports"
+          id="destination"
+          name="destination"
+          placeholder="Wpisz kod IATA lub wybierz z listy..."
+          required
+          autocomplete="off"
+        />
+
+        <datalist id="airports">
+          <option value="WAW">Warszawa Chopin</option>
+          <option value="WMI">Warszawa Modlin</option>
+          <option value="KRK">Kraków Balice</option>
+          <option value="GDN">Gdańsk Rębiechowo</option>
+          <option value="KTW">Katowice Pyrzowice</option>
+          <option value="WRO">Wrocław Strachowice</option>
+          <option value="POZ">Poznań Ławica</option>
+          <option value="BER">Berlin Brandenburg (Niemcy)</option>
+          <option value="FRA">Frankfurt (Niemcy)</option>
+          <option value="MUC">Monachium (Niemcy)</option>
+          <option value="CDG">Paryż Charles de Gaulle (Francja)</option>
+          <option value="BVA">Paryż Beauvais (Francja)</option>
+          <option value="LHR">Londyn Heathrow (UK)</option>
+          <option value="STN">Londyn Stansted (UK)</option>
+          <option value="LTN">Londyn Luton (UK)</option>
+          <option value="AMS">Amsterdam Schiphol (Holandia)</option>
+          <option value="MAD">Madryt Barajas (Hiszpania)</option>
+          <option value="BCN">Barcelona El Prat (Hiszpania)</option>
+          <option value="ALC">Alicante (Hiszpania)</option>
+          <option value="FCO">Rzym Fiumicino (Włochy)</option>
+          <option value="CIA">Rzym Ciampino (Włochy)</option>
+          <option value="MXP">Mediolan Malpensa (Włochy)</option>
+          <option value="BGY">Mediolan Bergamo (Włochy)</option>
+          <option value="NAP">Neapol (Włochy)</option>
+          <option value="ATH">Ateny (Grecja)</option>
+          <option value="LIS">Lizbona (Portugalia)</option>
+          <option value="DXB">Dubaj (ZEA)</option>
+          <option value="JFK">Nowy Jork JFK (USA)</option>
+          <option value="LAX">Los Angeles (USA)</option>
+          <option value="NRT">Tokio Narita (Japonia)</option>
+        </datalist>
+
+        <button type="submit">Wyszukaj najtańsze daty</button>
+      </form>
+      <div id="loading1" class="loading hidden">
+        ⏳ Skanowanie linii lotniczych... to może potrwać parę sekund.
+      </div>
+    </div>
+
+    <div id="step2" class="card hidden">
+      <h2>Krok 2: Wybierz daty</h2>
+      <p>Kliknij na kafelki, aby wybrać najkorzystniejsze dni.</p>
+
+      <h3>✈️ Wylot:</h3>
+      <div id="outbound-calendar-container"></div>
+
+      <h3 style="margin-top: 30px">✈️ Powrót:</h3>
+      <div id="inbound-calendar-container"></div>
+
+      <form
+        id="form-step2"
+        style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px"
+      >
+        <input type="hidden" id="selected_dep_date" />
+        <input type="hidden" id="selected_dep_price" />
+        <input type="hidden" id="selected_ret_date" />
+        <input type="hidden" id="selected_ret_price" />
+
+        <label for="adults">Liczba osób dorosłych:</label>
+        <input
+          type="number"
+          id="adults"
+          name="adults"
+          min="1"
+          max="4"
+          value="2"
+          required
+          style="width: 200px"
+        />
+
+        <button type="submit" id="btn-step2" disabled>
+          Najpierw wybierz obie daty
+        </button>
+      </form>
+      <div id="loading2" class="loading hidden">
+        🏨 Analiza hoteli na Booking.com...
+      </div>
+    </div>
+
+    <div id="step3" class="card hidden">
+      <h2>🎉 Podsumowanie Wybranej Podróży</h2>
+
+      <div class="result-box">
+        <h3>
+          ✈️ Loty (<span id="res-origin"></span> ➡️ <span id="res-dest"></span>)
+        </h3>
+        <p>Termin: <b id="res-dates"></b></p>
+        <p>
+          Łączny koszt lotów na <b id="res-adults-count"></b>:
+          <b id="res-flight-cost" style="color: #e67e22"></b> PLN
+        </p>
+      </div>
+
+      <div class="result-box">
+        <h3>🏨 Hotele (w <span id="res-city"></span>)</h3>
+        <p>
+          <b>Najtańsza opcja:</b> <span id="res-cheap-hotel"></span><br />
+          <span style="color: #16a085; font-weight: bold">
+            <span id="res-cheap-price-night"></span> PLN / noc
+          </span>
+          <span style="font-size: 0.9em; color: #7f8c8d">
+            (Całkowity koszt pobytu:
+            <span id="res-cheap-price-total"></span> PLN)
+          </span>
+        </p>
+        <p>
+          <b>Najdroższa opcja:</b> <span id="res-exp-hotel"></span><br />
+          <span style="color: #c0392b; font-weight: bold">
+            <span id="res-exp-price-night"></span> PLN / noc
+          </span>
+          <span style="font-size: 0.9em; color: #7f8c8d">
+            (Całkowity koszt pobytu: <span id="res-exp-price-total"></span> PLN)
+          </span>
+        </p>
+        <p>
+          Średnia cena hotelu:
+          <b><span id="res-avg-price"></span> PLN</b> (za noc)
+        </p>
+      </div>
+
+      <h2 style="text-align: center; margin-top: 30px">
+        💰 Całkowity koszt wyjazdu (Dla wszystkich): <br />
+        <span style="color: #27ae60; font-size: 36px" id="res-total"></span> PLN
+      </h2>
+
+      <h3 style="text-align: center; margin-top: 10px; color: #7f8c8d">
+        Czyli średnio
+        <span
+          style="color: #2c3e50; font-size: 24px"
+          id="res-total-per-person"
+        ></span>
+        PLN na osobę!
+      </h3>
+
+      <button
+        onclick="location.reload()"
+        style="background-color: #7f8c8d; margin-top: 20px"
+      >
+        Szukaj nowej podróży
+      </button>
+    </div>
+
+    <script>
+      let currentOrigin = "";
+      let currentDest = "";
+
+      function renderVisualCalendar(containerId, priceData, type) {
+        const container = document.getElementById(containerId);
+        if (!priceData || priceData.length === 0) {
+          container.innerHTML = "<p>Brak lotów w najbliższym czasie.</p>";
+          return;
+        }
+
+        const priceMap = {};
+        priceData.forEach((d) => (priceMap[d.date] = d.price));
+
+        const [startYY, startMM, startDD] = priceData[0].date.split("-");
+        let firstDate = new Date(startYY, startMM - 1, startDD);
+        let startYear = firstDate.getFullYear();
+        let startMonth = firstDate.getMonth();
+
+        let monthsToGenerate = 12 - startMonth;
+
+        let html = `<div class="calendars-wrapper">`;
+
+        for (let m = 0; m < monthsToGenerate; m++) {
+          let d = new Date(startYear, startMonth + m, 1);
+          let year = d.getFullYear();
+          let month = d.getMonth();
+          let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+          let firstDayIndex = d.getDay();
+          if (firstDayIndex === 0) firstDayIndex = 7;
+
+          let monthName = d.toLocaleString("pl-PL", {
+            month: "long",
+            year: "numeric",
+          });
+
+          html += `<div class="month-block">
+                              <h3 class="month-name">${monthName}</h3>
+                              <div class="calendar-grid">
+                                  <div class="day-header">Pn</div><div class="day-header">Wt</div><div class="day-header">Śr</div>
+                                  <div class="day-header">Cz</div><div class="day-header">Pt</div><div class="day-header">Sb</div><div class="day-header">Nd</div>`;
+
+          for (let i = 1; i < firstDayIndex; i++) {
+            html += `<div></div>`;
+          }
+
+          for (let i = 1; i <= daysInMonth; i++) {
+            let dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`;
+            let price = priceMap[dateStr];
+
+            if (price) {
+              html += `<div class="calendar-day ${type}-day" data-date="${dateStr}" data-price="${price}" onclick="selectDate(this, '${type}')">
+                                      <span class="day-num">${i}</span>
+                                      <span class="price-label">${price} zł</span>
+                                   </div>`;
+            } else {
+              html += `<div class="calendar-day disabled"><span class="day-num">${i}</span><span class="price-label">-</span></div>`;
+            }
+          }
+          html += `</div></div>`;
+        }
+        html += `</div>`;
+        container.innerHTML = html;
+      }
+
+      function updateInboundCalendarLocks() {
+        const depDateValue = document.getElementById("selected_dep_date").value;
+        if (!depDateValue) return;
+
+        const depDate = new Date(depDateValue);
+
+        document.querySelectorAll(".inbound-day").forEach((el) => {
+          const currentDateValue = el.getAttribute("data-date");
+          const currentDate = new Date(currentDateValue);
+
+          if (currentDate <= depDate) {
+            el.classList.add("locked");
+            if (el.classList.contains("selected")) {
+              el.classList.remove("selected");
+              document.getElementById("selected_ret_date").value = "";
+              document.getElementById("selected_ret_price").value = "";
+            }
+          } else {
+            el.classList.remove("locked");
+          }
+        });
+      }
+
+      function selectDate(element, type) {
+        if (element.classList.contains("locked")) return;
+
+        document
+          .querySelectorAll(`.${type}-day`)
+          .forEach((el) => el.classList.remove("selected"));
+
+        element.classList.add("selected");
+
+        if (type === "outbound") {
+          document.getElementById("selected_dep_date").value =
+            element.getAttribute("data-date");
+          document.getElementById("selected_dep_price").value =
+            element.getAttribute("data-price");
+          updateInboundCalendarLocks();
+        } else {
+          document.getElementById("selected_ret_date").value =
+            element.getAttribute("data-date");
+          document.getElementById("selected_ret_price").value =
+            element.getAttribute("data-price");
+        }
+
+        checkIfReadyForStep3();
+      }
+
+      function checkIfReadyForStep3() {
+        const depDate = document.getElementById("selected_dep_date").value;
+        const retDate = document.getElementById("selected_ret_date").value;
+        const btn = document.getElementById("btn-step2");
+
+        if (depDate && retDate) {
+          btn.disabled = false;
+          btn.innerText = "Szukaj hoteli i podsumuj koszty";
+        } else {
+          btn.disabled = true;
+          btn.innerText = "Najpierw wybierz obie daty";
+        }
+      }
+
+      // STEP 1
+      document
+        .getElementById("form-step1")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          document.getElementById("loading1").classList.remove("hidden");
+
+          const formData = new FormData(e.target);
+          currentOrigin = formData.get("origin");
+          currentDest = formData.get("destination");
+
+          try {
+            const response = await fetch("/api/calendars", {
+              method: "POST",
+              body: formData,
+            });
+            if (!response.ok) {
+              let errorMsg = `Błąd HTTP ${response.status}`;
+              try {
+                const errData = await response.json();
+                if (Array.isArray(errData.detail)) {
+                  errorMsg = errData.detail.map((e) => e.msg).join("\n");
+                } else if (errData.detail) {
+                  errorMsg = errData.detail;
+                }
+              } catch (parseErr) {}
+              throw new Error(errorMsg);
+            }
+
+            const data = await response.json();
+
+            renderVisualCalendar(
+              "outbound-calendar-container",
+              data.outbound_calendar,
+              "outbound",
+            );
+            renderVisualCalendar(
+              "inbound-calendar-container",
+              data.inbound_calendar,
+              "inbound",
+            );
+
+            document.getElementById("step1").classList.add("hidden");
+            document.getElementById("step2").classList.remove("hidden");
+          } catch (err) {
+            alert(
+              `Wystąpił błąd podczas pobierania kalendarzy:\n\n${err.message}`,
+            );
+          } finally {
+            document.getElementById("loading1").classList.add("hidden");
+          }
+        });
+
+      // STEP 2
+      document
+        .getElementById("form-step2")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          document.getElementById("loading2").classList.remove("hidden");
+
+          const numAdults =
+            parseInt(document.getElementById("adults").value) || 1;
+
+          const priceOutSingle = parseFloat(
+            document.getElementById("selected_dep_price").value,
+          );
+          const priceInSingle = parseFloat(
+            document.getElementById("selected_ret_price").value,
+          );
+
+          const totalFlightPrice = (priceOutSingle + priceInSingle) * numAdults;
+
+          const formData = new FormData();
+          formData.append("origin", currentOrigin);
+          formData.append("destination", currentDest);
+          formData.append(
+            "departure_date",
+            document.getElementById("selected_dep_date").value,
+          );
+          formData.append(
+            "return_date",
+            document.getElementById("selected_ret_date").value,
+          );
+          formData.append("adults", numAdults);
+          formData.append("flight_price_total", totalFlightPrice);
+
+          try {
+            const response = await fetch("/api/analyze", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              let errorMsg = `Błąd HTTP ${response.status}`;
+              try {
+                const errData = await response.json();
+                if (Array.isArray(errData.detail)) {
+                  errorMsg = errData.detail.map((e) => e.msg).join("\n");
+                } else if (errData.detail) {
+                  errorMsg = errData.detail;
+                }
+              } catch (parseErr) {}
+              throw new Error(errorMsg);
+            }
+
+            const data = await response.json();
+
+            const totalTripCost =
+              data.final_calculation.absolute_minimum_trip_cost;
+            const costPerPerson = totalTripCost / numAdults;
+
+            document.getElementById("res-origin").innerText = currentOrigin;
+            document.getElementById("res-dest").innerText = currentDest;
+            document.getElementById("res-dates").innerText =
+              `${data.trip_details.check_in} do ${data.trip_details.check_out}`;
+            document.getElementById("res-adults-count").innerText =
+              `${numAdults} dorosłych`;
+            document.getElementById("res-flight-cost").innerText =
+              totalFlightPrice.toFixed(2);
+            document.getElementById("res-city").innerText =
+              data.location_translation.resolved_city_name;
+            document.getElementById("res-cheap-hotel").innerText =
+              data.hotel_analysis.cheapest_hotel.name;
+            document.getElementById("res-cheap-price-total").innerText =
+              data.hotel_analysis.cheapest_hotel.total_price.toFixed(2);
+            document.getElementById("res-exp-hotel").innerText =
+              data.hotel_analysis.most_expensive_hotel.name;
+            document.getElementById("res-exp-price-total").innerText =
+              data.hotel_analysis.most_expensive_hotel.total_price.toFixed(2);
+            document.getElementById("res-avg-price").innerText =
+              data.hotel_analysis.average_nightly_price;
+            document.getElementById("res-total").innerText =
+              totalTripCost.toFixed(2);
+            document.getElementById("res-total-per-person").innerText =
+              costPerPerson.toFixed(2);
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("step3").classList.remove("hidden");
+            document.getElementById("res-city").innerText =
+              data.location_translation.resolved_city_name;
+            document.getElementById("res-cheap-hotel").innerText =
+              data.hotel_analysis.cheapest_hotel.name;
+            document.getElementById("res-cheap-price-night").innerText =
+              data.hotel_analysis.cheapest_hotel.price_per_night.toFixed(2);
+            document.getElementById("res-cheap-price-total").innerText =
+              data.hotel_analysis.cheapest_hotel.total_price.toFixed(2);
+            document.getElementById("res-exp-hotel").innerText =
+              data.hotel_analysis.most_expensive_hotel.name;
+            document.getElementById("res-exp-price-night").innerText =
+              data.hotel_analysis.most_expensive_hotel.price_per_night.toFixed(
+                2,
+              );
+            document.getElementById("res-exp-price-total").innerText =
+              data.hotel_analysis.most_expensive_hotel.total_price.toFixed(2);
+            document.getElementById("res-avg-price").innerText =
+              data.hotel_analysis.average_nightly_price.toFixed(2);
+          } catch (err) {
+            alert("Niestety, wystąpił problem:\n\n${err.message}");
+          } finally {
+            document.getElementById("loading2").classList.add("hidden");
+          }
+        });
+    </script>
+  </body>
+</html>
