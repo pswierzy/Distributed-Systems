@@ -47,7 +47,7 @@ public interface CalcPrx extends com.zeroc.Ice.ObjectPrx
      **/
     default com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> _iceI_addAsync(int iceP_a, int iceP_b, java.util.Map<String, String> context, boolean sync)
     {
-        com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "add", null, sync, null);
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "add", com.zeroc.Ice.OperationMode.Idempotent, sync, null);
         f.invoke(true, context, null, ostr -> {
                      ostr.writeInt(iceP_a);
                      ostr.writeInt(iceP_b);
@@ -89,7 +89,7 @@ public interface CalcPrx extends com.zeroc.Ice.ObjectPrx
      **/
     default com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> _iceI_subtractAsync(int iceP_a, int iceP_b, java.util.Map<String, String> context, boolean sync)
     {
-        com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "subtract", null, sync, null);
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Long> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "subtract", com.zeroc.Ice.OperationMode.Idempotent, sync, null);
         f.invoke(true, context, null, ostr -> {
                      ostr.writeInt(iceP_a);
                      ostr.writeInt(iceP_b);
@@ -138,6 +138,65 @@ public interface CalcPrx extends com.zeroc.Ice.ObjectPrx
                  }, null);
         return f;
     }
+
+    default double avg(long[] seq)
+        throws EmptySequenceError
+    {
+        return avg(seq, com.zeroc.Ice.ObjectPrx.noExplicitContext);
+    }
+
+    default double avg(long[] seq, java.util.Map<String, String> context)
+        throws EmptySequenceError
+    {
+        try
+        {
+            return _iceI_avgAsync(seq, context, true).waitForResponseOrUserEx();
+        }
+        catch(EmptySequenceError ex)
+        {
+            throw ex;
+        }
+        catch(com.zeroc.Ice.UserException ex)
+        {
+            throw new com.zeroc.Ice.UnknownUserException(ex.ice_id(), ex);
+        }
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Double> avgAsync(long[] seq)
+    {
+        return _iceI_avgAsync(seq, com.zeroc.Ice.ObjectPrx.noExplicitContext, false);
+    }
+
+    default java.util.concurrent.CompletableFuture<java.lang.Double> avgAsync(long[] seq, java.util.Map<String, String> context)
+    {
+        return _iceI_avgAsync(seq, context, false);
+    }
+
+    /**
+     * @hidden
+     * @param iceP_seq -
+     * @param context -
+     * @param sync -
+     * @return -
+     **/
+    default com.zeroc.IceInternal.OutgoingAsync<java.lang.Double> _iceI_avgAsync(long[] iceP_seq, java.util.Map<String, String> context, boolean sync)
+    {
+        com.zeroc.IceInternal.OutgoingAsync<java.lang.Double> f = new com.zeroc.IceInternal.OutgoingAsync<>(this, "avg", com.zeroc.Ice.OperationMode.Idempotent, sync, _iceE_avg);
+        f.invoke(true, context, null, ostr -> {
+                     ostr.writeLongSeq(iceP_seq);
+                 }, istr -> {
+                     double ret;
+                     ret = istr.readDouble();
+                     return ret;
+                 });
+        return f;
+    }
+
+    /** @hidden */
+    static final Class<?>[] _iceE_avg =
+    {
+        EmptySequenceError.class
+    };
 
     /**
      * Contacts the remote server to verify that the object implements this type.

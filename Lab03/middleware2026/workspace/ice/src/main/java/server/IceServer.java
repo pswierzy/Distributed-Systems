@@ -1,4 +1,4 @@
-package sr.ice.server;
+package server;
 
 import com.zeroc.Ice.Communicator;
 import com.zeroc.Ice.Identity;
@@ -36,6 +36,7 @@ public class IceServer {
 			// 4. Dodanie wpisów do tablicy ASM, skojarzenie nazwy obiektu (Identity) z serwantem
 			adapter.add(calcServant1, new Identity("calc11", "calc"));
 			adapter.add(calcServant2, new Identity("calc22", "calc"));
+            adapter.add(calcServant2, new Identity("calc33", "calc"));
 
 			// 5. Aktywacja adaptera i wejście w pętlę przetwarzania żądań
 			adapter.activate();
@@ -65,3 +66,26 @@ public class IceServer {
 		app.t1(args);
 	}
 }
+
+/*
+• Jak nazywają się zmienne wskazujące na serwantów implementujących kalkulator?
+calcServant1 i calcServant2
+• Ile sztuk obiektów obecnie udostępnia klientom serwer? Jak się one nazywają?
+2 sztuki: calc11 i calc22
+• Z którym obiektem ICE skomunikował się klient?
+z calc11
+• Ile wpisów zawiera obecnie tablica ASM adaptera? Czy odwzorowanie między obiektem i serwantem jest 1:1?
+2 wpisy, odwzorowanie 1:1
+• Z którym obiektem Java (tj. serwantem) (nazwa zmiennej wskazującej na niego) komunikował się klient?
+calcServant1
+• W jaki sposób klient uzyskał referencję do tego konkretnego obiektu (tj. co zawiera referencja)?
+przez metodę stringToProxy — tożsamość obiektu, endpointy, protokoły, adresy, porty
+• Co się stanie jeśli klient zrealizuje wywołanie na nieistniejącym obecnie obiekcie (przetestuj)?
+com.zeroc.Ice.ObjectNotExistException
+
+Wireshark:
+ - rozumie protokół Ice
+ - Request ma: id, identity, operacje, dane
+ - Reply ma: id, status, wynik
+ - żeby połączyć się z innymi, to należy: zmienić adres na prawdziwy a nie localhostowy i ustawić firewalla
+ */

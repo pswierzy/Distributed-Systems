@@ -1,7 +1,8 @@
-package sr.ice.client;
+package client;
 
 import Demo.A;
 import Demo.CalcPrx;
+import Demo.EmptySequenceError;
 import com.zeroc.Ice.*;
 
 import java.io.IOException;
@@ -25,10 +26,14 @@ public class IceClient {
             if(base1 == null) { //powyższa opcja się nie uda, gdy nie był wskazany plik konfiguracyjny (--Ice.Config=client.config)
                 // 2. Uzyskanie referencji obiektu - to samo co powyżej, ale mniej ładnie
                 System.out.println("(using a hard-coded configuration)");
-                base1 = communicator.stringToProxy("calc/calc11:tcp -h 127.0.0.2 -p 10000 -z : udp -h 127.0.0.2 -p 10000 -z"); //opcja -z włącza możliwość kompresji wiadomości
+                base1 = communicator.stringToProxy("calc/calc22:tcp -h 127.0.0.2 -p 10010 -z : udp -h 127.0.0.2 -p 10010 -z"); //opcja -z włącza możliwość kompresji wiadomości
             }
 
-			// 3. Rzutowanie, zawężanie (do typu Calc)
+            ObjectPrx base3 = communicator.stringToProxy("calc/calc33:tcp -h 127.0.0.2 -p 10010 -z : udp -h 127.0.0.2 -p 10010 -z");
+            CalcPrx obj3 = CalcPrx.checkedCast(base3);
+            if (obj3 == null) throw new Error("Invalid proxy for obj3");
+
+            // 3. Rzutowanie, zawężanie (do typu Calc)
 			CalcPrx obj1 = CalcPrx.checkedCast(base1);
 			//CalcPrx obj1 = CalcPrx.uncheckedCast(base1); //na czym polega różnica?
 			if (obj1 == null) throw new Error("Invalid proxy");
@@ -37,6 +42,8 @@ public class IceClient {
 			String line = null;
 			java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
 			long r;
+            long r1;
+            long r2;
 			A a;
 
 			// 4. Wywołanie zdalnych operacji i zmiana trybu działania proxy obiektu obj1
@@ -45,6 +52,27 @@ public class IceClient {
 					System.out.print("==> ");
 					line = in.readLine();
 					switch (line) {
+                        case "avg":
+                            long[] nums = {10L, 20L, 35L, 40L, 44L};
+                            try{
+                                System.out.println("RESULT = " + obj3.avg(nums));
+                            } catch (EmptySequenceError ex) {
+                                System.err.println(ex.reason);
+                            }
+                            break;
+                        case "avg-empty":
+                            long[] no_nums = {};
+                            try{
+                                System.out.println("RESULT = " + obj3.avg(no_nums));
+                            } catch (EmptySequenceError ex) {
+                                System.err.println(ex.reason);
+                            }
+                            break;
+                        case "add-double":
+                            r1 = obj1.add(7, 8);
+                            r2 = obj3.add(7, 8);
+                            System.out.println("RESULT1: " + r1 + "; RESULT2: " + r2);
+                            break;
 						case "add":
 							r = obj1.add(7, 8);
 							System.out.println("RESULT = " + r);

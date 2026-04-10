@@ -37,7 +37,6 @@
 
     <build>
         <plugins>
-            <!-- Kompilator Javy -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -63,7 +62,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Plugin do uruchamiania aplikacji -->
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
