@@ -23,9 +23,9 @@ service Calculator {
 
 enum OperationType {
 	SUM = 0;
-    AVG = 1;
-    MIN = 2;
-    MAX = 3;
+  AVG = 1;
+  MIN = 2;
+  MAX = 3;
 }
 
 message ComplexArithmeticOpArguments {

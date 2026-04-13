@@ -34,6 +34,14 @@ public class ProtoSerialization {
                                 Person.PhoneNumber.newBuilder()
                                         .setNumber("+48-699-989-796")
                                         .setType(Person.PhoneType.MOBILE))
+                        .addSalary(
+                                Person.Salary.newBuilder()
+                                        .setJan(100.1)
+                                        .setFeb(120.1)
+                                        .setMar(150.1)
+                                        .setApr(230.1)
+                                        .setMay(250.3)
+                        )
                         .build();
 
         byte[] personSer = null;
