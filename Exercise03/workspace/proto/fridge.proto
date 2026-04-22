@@ -1,0 +1,47 @@
+syntax = "proto3";
+package smarthome;
+
+import "common.proto";
+
+option java_multiple_files = true;
+option java_package = "agh.smarthome";
+
+message FridgeConfig {
+  float target_fridge_temp = 1;
+  optional float target_freezer_temp = 2;
+}
+
+message FridgeStatus {
+  float target_fridge_temp = 1;
+  float current_fridge_temp = 2;
+  optional float target_freezer_temp = 3;
+  optional float current_freezer_temp = 4;
+}
+
+message SetFridgeConfigRequest {
+  string device_id = 1;
+  FridgeConfig config = 2;
+}
+
+message SetFridgeConfigResponse {
+  oneof result {
+    bool success = 1;
+    ErrorDetails error = 2;
+  }
+}
+
+message GetFridgeStatusRequest {
+  string device_id = 1;
+}
+
+message GetFridgeStatusResponse {
+  oneof result {
+    FridgeStatus status = 1;
+    ErrorDetails error = 2;
+  }
+}
+
+service FridgeService {
+  rpc SetConfig(SetFridgeConfigRequest) returns (SetFridgeConfigResponse);
+  rpc GetStatus(GetFridgeStatusRequest) returns (GetFridgeStatusResponse);
+}

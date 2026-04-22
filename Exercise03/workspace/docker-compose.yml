@@ -1,0 +1,71 @@
+services:
+  build-java:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/workspace
+      - maven-cache:/root/.m2
+    command: ["bash", "-c", "cd server && mvn compile"]
+
+  server-floor1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smarthome_server_1
+    volumes:
+      - .:/workspace
+      - maven-cache:/root/.m2
+    ports:
+      - "50051:50051/tcp"
+    depends_on:
+      build-java:
+        condition: service_completed_successfully
+    command:
+      [
+        "bash",
+        "-c",
+        "cd server && mvn exec:java -Dexec.mainClass='agh.smarthome.ServerMain' -Dexec.args='1'",
+      ]
+
+  server-floor2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smarthome_server_2
+    volumes:
+      - .:/workspace
+      - maven-cache:/root/.m2
+    ports:
+      - "50052:50052/tcp"
+    depends_on:
+      build-java:
+        condition: service_completed_successfully
+    command:
+      [
+        "bash",
+        "-c",
+        "cd server && mvn exec:java -Dexec.mainClass='agh.smarthome.ServerMain' -Dexec.args='2'",
+      ]
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smarthome_client
+    volumes:
+      - .:/workspace
+    tty: true
+    depends_on:
+      build-java:
+        condition: service_completed_successfully
+    command: >
+      bash -c "
+      mkdir -p client &&
+      cd client &&
+      python3 -m grpc_tools.protoc -I../proto --python_out=. --grpc_python_out=. ../proto/common.proto ../proto/camera.proto ../proto/fridge.proto &&
+      echo 'Python stubs generated successfully.' &&
+      sleep infinity"
+
+volumes:
+  maven-cache:

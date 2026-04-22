@@ -1,0 +1,52 @@
+syntax = "proto3";
+package smarthome;
+
+import "common.proto";
+
+option java_multiple_files = true;
+option java_package = "agh.smarthome";
+
+message PTZVector {
+  float pan = 1;   
+  float tilt = 2;  
+  float zoom = 3;  
+}
+
+message SetCameraPositionRequest {
+  string device_id = 1;
+  PTZVector position = 2;
+}
+
+message SetRecordingRequest {
+  string device_id = 1;
+  bool is_recording = 2;
+}
+
+message CameraResponse {
+  oneof result {
+    bool success = 1;
+    ErrorDetails error = 2;
+  }
+}
+
+message GetCameraStatusRequest {
+  string device_id = 1;
+}
+
+message CameraStatus {
+  bool is_recording = 1;
+  optional PTZVector current_position = 2;
+}
+
+message GetCameraStatusResponse {
+  oneof result {
+    CameraStatus status = 1;
+    ErrorDetails error = 2;
+  }
+}
+
+service CameraService {
+  rpc SetPosition(SetCameraPositionRequest) returns (CameraResponse);
+  rpc SetRecording(SetRecordingRequest) returns (CameraResponse);
+  rpc GetStatus(GetCameraStatusRequest) returns (GetCameraStatusResponse);
+}

@@ -1,0 +1,39 @@
+syntax = "proto3";
+package smarthome;
+
+option java_multiple_files = true;
+option java_package = "agh.smarthome";
+
+enum DeviceType {
+  UNKNOWN = 0;
+  FRIDGE_STANDARD = 1;
+  FRIDGE_WITH_FREEZER = 2;
+  CAMERA_STATIC = 3;
+  CAMERA_PTZ = 4;
+}
+
+message DeviceDescriptor {
+  string device_id = 1;
+  DeviceType type = 2;
+}
+
+message ErrorDetails {
+  enum ErrorCode {
+    UNKNOWN_ERROR = 0;
+    DEVICE_NOT_FOUND = 1;
+    INVALID_ARGUMENT = 2;
+    HARDWARE_ERROR = 3;
+  }
+  ErrorCode code = 1;
+  string message = 2;
+}
+
+message ListDevicesRequest {}
+
+message ListDevicesResponse {
+  repeated DeviceDescriptor devices = 1;
+}
+
+service DeviceRegistry {
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+}
