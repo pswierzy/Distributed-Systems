@@ -1,0 +1,31 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: server
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/server
+    command: [
+        "bash",
+        "-c",
+        "slice2java --output-dir src/main/java ../slice/counter.ice &&
+        mvn clean compile exec:java -Dexec.mainClass='agh.counter.ServerMain' -Dexec.args='--Ice.Config=server.config'",
+      ]
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: client
+    volumes:
+      - .:/workspace
+    tty: true
+    depends_on:
+      - server
+    command:
+      [
+        "bash",
+        "-c",
+        "slice2py --output-dir client slice/counter.ice && sleep infinity",
+      ]
