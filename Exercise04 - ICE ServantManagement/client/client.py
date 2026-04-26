@@ -14,7 +14,7 @@ def main():
                 print("Brak dostępnych obiektów")
             else:
                 for k in proxies.keys():
-                    print(f"\t-{k}: {proxies[k]}")
+                    print(f"\t-{k}")
             ident = input("\nPodaj nazwę obiektu do wywołania lub 'exit' aby zakończyć: ").strip()
 
             if ident.lower() == "exit":
@@ -62,6 +62,7 @@ def main():
 
                 except Ice.ObjectNotExistException:
                     print("\nBłąd: ObjectNotExistException!")
+                    proxies.pop(ident, None)
                     break
                 except Exception as e:
                     print(f"\nBłąd: {e}")
