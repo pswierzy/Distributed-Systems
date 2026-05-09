@@ -1,0 +1,24 @@
+---
+config:
+  layout: fixed
+---
+flowchart TB
+    AG(["Agencja"]) -- "Publikacja: service.TYP" --> EX_S{"exchange_services<br>(TOPIC)"}
+    EX_S -- "Wiązanie: service.TYP" --> Q_SRV["Kolejki Usług<br>q_passenger, q_cargo, q_satellite"]
+    Q_SRV -- Odbiór --> CA(["Przewoźnik"])
+    CA -- "Publikacja: agency.NAZWA" --> EX_C{"exchange_confirmations<br>(TOPIC)"}
+    EX_C -- "Wiązanie: agency.NAZWA" --> Q_CONF["Ekskluzywna Kolejka<br>Potwierdzeń Agencji"]
+    Q_CONF -- Odbiór --> AG
+    ADM(["Administrator"]) -- "Publikacja: admin.CEL" --> EX_A{"exchange_admin<br>(TOPIC)"}
+    EX_A -- "Wiązanie: admin.agency / admin.all" --> Q_ADM_AG["Kolejka Komunikatów<br>w Agencji"]
+    Q_ADM_AG -- Odbiór --> AG
+    EX_A -- "Wiązanie: admin.carrier / admin.all" --> Q_ADM_CA["Kolejka Komunikatów<br>w Przewoźniku"]
+    EX_S -. "Wiązanie: service.#" .-> Q_ADMIN["Kolejka Admin"]
+    EX_C -. "Wiązanie: agency.#" .-> Q_ADMIN
+    Q_ADMIN -. Logi ruchu .-> ADM
+    Q_ADM_CA -- Odbiór --> CA
+
+     EX_S:::exchange
+     EX_C:::exchange
+     EX_A:::exchange
+    classDef exchange fill:#f9f,stroke:#333,stroke-width:2pxz
