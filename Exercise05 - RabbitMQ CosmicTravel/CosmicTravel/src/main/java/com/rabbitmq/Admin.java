@@ -41,8 +41,12 @@ public class Admin {
             String input = reader.readLine();
             if ("exit".equalsIgnoreCase(input)) break;
 
-            String[] parts = input.split(" ");
+            String[] parts = input.split(" ", 2);
             String target = parts[0];
+            if (parts.length < 2) {
+                System.out.println("Błąd: Brak wiadomości");
+                continue;
+            }
             String msg = parts[1];
             String routingKey;
 
