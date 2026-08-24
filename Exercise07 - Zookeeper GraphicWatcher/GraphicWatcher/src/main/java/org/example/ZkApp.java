@@ -9,6 +9,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ZkApp implements Watcher {
@@ -33,7 +34,7 @@ public class ZkApp implements Watcher {
             else if (event.getType() == EventType.NodeCreated && event.getPath().equals(ZNODE_A)) {
                 startApp();
                 zk.exists(ZNODE_A, this);
-                zk.getChildren(ZNODE_A, this);
+                showChildrenCount(ZNODE_A);
             }
 
             else if (event.getType() == EventType.NodeDeleted && event.getPath().equals(ZNODE_A)) {
@@ -41,10 +42,10 @@ public class ZkApp implements Watcher {
                 zk.exists(ZNODE_A, this);
             }
 
-            else if (event.getType() == EventType.NodeChildrenChanged && event.getPath().equals(ZNODE_A)) {
+            else if (event.getType() == EventType.NodeChildrenChanged &&
+                    (event.getPath().equals(ZNODE_A) || event.getPath().startsWith(ZNODE_A + "/"))) {
                 try {
-                    showChildrenCount();
-                    zk.getChildren(ZNODE_A, this);
+                    showChildrenCount(ZNODE_A);
                 }
                 catch (KeeperException.NoNodeException _) {}
             }
@@ -56,7 +57,7 @@ public class ZkApp implements Watcher {
     private void checkInitialState() throws KeeperException, InterruptedException {
         if (zk.exists(ZNODE_A, this) != null) {
             startApp();
-            zk.getChildren(ZNODE_A, this);
+            showChildrenCount(ZNODE_A);
         } else {
             stopApp();
         }
@@ -81,9 +82,18 @@ public class ZkApp implements Watcher {
         }
     }
 
-    private void showChildrenCount() throws KeeperException, InterruptedException {
-        List<String> children = zk.getChildren(ZNODE_A, false);
-        System.out.println("Aktualna liczba potomków: " + children.size());
+    private int showChildrenCount(String znode) throws KeeperException, InterruptedException {
+        List<String> children = zk.getChildren(znode, this);
+        int sum = 0;
+        for (String child : children) {
+            String childPath = znode.equals("/") ? znode + child : znode + "/" + child;
+            sum += showChildrenCount(childPath);
+        }
+
+        if (Objects.equals(znode, ZNODE_A)) {
+            System.out.println("Aktualna liczba potomków: " + (sum+children.size()));
+        }
+        return sum+children.size();
     }
 
     public void printTree() {
